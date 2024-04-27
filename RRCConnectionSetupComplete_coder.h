@@ -7,7 +7,7 @@
 #include "UL-DCCH-Message.h"
 
 
-void RRCConnectionSetupComplete_coder(uint8_t **buffer, ssize_t *len);
-asn_dec_rval_t RRCConnectionSetupComplete_decoder(UL_DCCH_Message_t* ul_dcch_msg, uint8_t **buffer, ssize_t *len);
+asn_enc_rval_t RRCConnectionSetupComplete_coder(uint8_t **buffer, ssize_t *len);
+asn_dec_rval_t RRCConnectionSetupComplete_decoder(UL_DCCH_Message_t** ul_dcch_msg, uint8_t **buffer, size_t len);
 
 #endif

@@ -20,8 +20,9 @@ int main() {
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    uint8_t buffer[BUFFER_SIZE] = {0};
-    uint8_t setup_msg[BUFFER_SIZE] = { 0 };
+    char buffer[BUFFER_SIZE] = {0};
+    char setup_msg[BUFFER_SIZE] = { 0 };
+    size_t buffer_size = 1024; 
 
     // create a socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)) == 0) {
@@ -68,29 +69,30 @@ int main() {
     while ((valread = read(new_socket, buffer, BUFFER_SIZE)) > 0) {
 
         UL_CCCH_Message_t* ul_ccch_msg = 0; 
-        asn_dec_rval_t dec_rval = RRCConnectionRequest_decoder(ul_ccch_msg, buffer, BUFFER_SIZE);
+        asn_dec_rval_t dec_rval = RRCConnectionRequest_decoder(&ul_ccch_msg, &buffer, strlen(buffer));
         if(dec_rval.code != RC_OK){
             printf("Failed to decode request data, %d bytes was consumed\n", dec_rval.consumed);
             continue; // yeee should have send reject
         }
-        printf("Received data:\n");
+        printf("Received data: %s wuth %d\n", buffer, strlen(buffer));
         xer_fprint(stdout, &asn_DEF_UL_CCCH_Message, ul_ccch_msg);
 
         memset(buffer, 0, sizeof(buffer));
         break;
     }
-
-    RCConnectionSetup_coder(&setup_msg, BUFFER_SIZE);
-    // if(enc_rval.encoded == NULL){
-    //     printf("Failed to encode setup data, %d bytes was encoded\n", enc_rval.encoded);
-    // }
+    
+    asn_enc_rval_t enc_setup_rval = RRCConnectionSetup_coder(&setup_msg, &buffer_size);
+    if(enc_setup_rval.encoded == NULL){
+        printf("Failed to encode setup data, %d bytes was encoded\n", enc_setup_rval.encoded);
+        return -1;
+    }
 
     send(new_socket, setup_msg, strlen(setup_msg), 0);
 
-    valread = 0;
+    //valread = 0;
     while ((valread = read(new_socket, buffer, BUFFER_SIZE)) > 0) {
         UL_DCCH_Message_t* ul_dcch_msg = 0; 
-        asn_dec_rval_t dec_rval = RRCConnectionSetupComplete_decoder(ul_dcch_msg, buffer, BUFFER_SIZE);
+        asn_dec_rval_t dec_rval = RRCConnectionSetupComplete_decoder(&ul_dcch_msg, &buffer, strlen(buffer));
 
         if(dec_rval.code != RC_OK){
             printf("Failed to decode complete data, %d bytes was consumed\n", dec_rval.consumed);

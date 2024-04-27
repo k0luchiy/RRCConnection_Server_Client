@@ -29,7 +29,7 @@
     if (asn_sequence_add(VaR, PtR) != 0) assert(0)
 
 
-void RRCConnectionSetup_coder(uint8_t **buffer, ssize_t *len) {
+asn_enc_rval_t RRCConnectionSetup_coder(uint8_t **buffer, ssize_t *len) {
     DL_CCCH_Message_t dl_ccch_msg;
     RRCConnectionSetup_t* out = NULL; 
     RRCConnectionSetup_r8_IEs_t* ie = NULL;
@@ -66,13 +66,10 @@ void RRCConnectionSetup_coder(uint8_t **buffer, ssize_t *len) {
                                    buffer,
                                    1000);
 
-    if(enc_rval.encoded == NULL){
-       printf("Failed to encode setup complete data, %d bytes was encoded\n", enc_rval.encoded);
-       exit(-1);
-    }
+    return enc_rval;
 }
 
-asn_dec_rval_t RRCConnectionSetup_decoder(DL_CCCH_Message_t* dl_ccch_msg, uint8_t **buffer, ssize_t *len){
-    return uper_decode(0, &asn_DEF_DL_CCCH_Message, (void *)&dl_ccch_msg, buffer, sizeof(DL_CCCH_Message_t), 0, 0);
+asn_dec_rval_t RRCConnectionSetup_decoder(DL_CCCH_Message_t** dl_ccch_msg, uint8_t **buffer, size_t len){
+    return uper_decode(0, &asn_DEF_DL_CCCH_Message, (void **)dl_ccch_msg, buffer, sizeof(DL_CCCH_Message_t), 0, 0);
 }
 

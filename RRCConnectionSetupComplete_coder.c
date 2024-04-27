@@ -15,7 +15,7 @@
 #include "RRCConnectionSetupComplete_coder.h"
 
 
-void RRCConnectionSetupComplete_coder(uint8_t **buffer, ssize_t *len) {
+asn_enc_rval_t RRCConnectionSetupComplete_coder(uint8_t **buffer, ssize_t *len) {
 
     UL_DCCH_Message_t ul_dcch_msg;
     RRCConnectionSetupComplete_t* setupComplete = NULL; 
@@ -40,13 +40,10 @@ void RRCConnectionSetupComplete_coder(uint8_t **buffer, ssize_t *len) {
                                     1000);
 
 
-    if(enc_rval.encoded == NULL){
-       printf("Failed to encode setup complete data, %d bytes was encoded\n", enc_rval.encoded);
-       exit(-1);
-    }
+    return enc_rval;
 }
 
-asn_dec_rval_t RRCConnectionSetupComplete_decoder(UL_DCCH_Message_t* ul_dcch_msg, uint8_t **buffer, ssize_t *len){
-    return uper_decode(0, &asn_DEF_UL_DCCH_Message, (void **)&ul_dcch_msg, buffer, sizeof(UL_DCCH_Message_t), 0,0);
+asn_dec_rval_t RRCConnectionSetupComplete_decoder(UL_DCCH_Message_t** ul_dcch_msg, uint8_t **buffer, size_t len){
+    return uper_decode(0, &asn_DEF_UL_DCCH_Message, (void **)ul_dcch_msg, buffer, sizeof(UL_DCCH_Message_t), 0,0);
 }
 

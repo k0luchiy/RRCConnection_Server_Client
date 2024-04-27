@@ -8,7 +8,7 @@
 #include "RRCConnectionSetup.h"
 
 
-void RRCConnectionSetup_coder(uint8_t **buffer, ssize_t *len);
-asn_dec_rval_t RRCConnectionSetup_decoder(DL_CCCH_Message_t* dl_ccch_msg, uint8_t **buffer, ssize_t *len);
+asn_enc_rval_t RRCConnectionSetup_coder(uint8_t **buffer, ssize_t *len);
+asn_dec_rval_t RRCConnectionSetup_decoder(DL_CCCH_Message_t** dl_ccch_msg, uint8_t **buffer, size_t len);
 
 #endif

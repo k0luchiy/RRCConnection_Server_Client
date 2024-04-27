@@ -19,7 +19,7 @@
     if (asn_sequence_add(VaR, PtR) != 0) assert(0)
 
 
-void RRCConnectionRequest_coder(uint8_t **buffer, ssize_t *len) {
+asn_enc_rval_t RRCConnectionRequest_coder(uint8_t **buffer, ssize_t *len) {
 
     UL_CCCH_Message_t ul_ccch_msg;
 
@@ -55,19 +55,21 @@ void RRCConnectionRequest_coder(uint8_t **buffer, ssize_t *len) {
     ie->spare.size=1;
     ie->spare.bits_unused = 7;
 
+
+    //xer_fprint(stdout, &asn_DEF_UL_CCCH_Message, (void *)&ul_ccch_msg);
+
     asn_enc_rval_t enc_rval = uper_encode_to_buffer(&asn_DEF_UL_CCCH_Message,
                                     NULL,
                                     (void *)&ul_ccch_msg,
                                     buffer,
                                     sizeof(UL_CCCH_Message_t));
 
-    if(enc_rval.encoded == NULL){
-       printf("Failed to encode request data, %d bytes was encoded\n", enc_rval.encoded);
-       exit(-1);
-    }
+    
+    return enc_rval;
 }
 
 
-asn_dec_rval_t RRCConnectionRequest_decoder(UL_CCCH_Message_t* ul_ccch_msg, uint8_t **buffer, ssize_t *len){
-    return uper_decode(0, &asn_DEF_UL_CCCH_Message, (void *)&ul_ccch_msg, buffer, sizeof(UL_CCCH_Message_t), 0,0);
+asn_dec_rval_t RRCConnectionRequest_decoder(UL_CCCH_Message_t** ul_ccch_msg, uint8_t **buffer, size_t len){
+    asn_dec_rval_t rval = uper_decode(0, &asn_DEF_UL_CCCH_Message, (void **)ul_ccch_msg, buffer, sizeof(UL_CCCH_Message_t), 0,0);
+    return rval;
 }

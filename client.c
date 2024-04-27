@@ -18,9 +18,9 @@ int main(int argc, char const* argv[])
 {
     int status, valread, client_fd;
     struct sockaddr_in serv_addr;
-    char* hello = "Hello from client";
-    uint8_t req_buffer[BUFFER_SIZE] = { 0 };
-    uint8_t buffer[BUFFER_SIZE] = { 0 };
+    char req_buffer[BUFFER_SIZE] = { 0 };
+    char buffer[BUFFER_SIZE] = { 0 };
+    size_t buffer_size = 1024; 
 
     if ((client_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_SCTP)) < 0) {
         printf("\n Socket creation error \n");
@@ -47,19 +47,19 @@ if ((status
     }
     
     
-   RRCConnectionRequestcoder(&req_buffer, BUFFER_SIZE);
-   // asn_enc_rval_t enc_rval = RRCConnectionSetup_coder(&req_buffer, BUFFER_SIZE);
-   // if(enc_rval.encoded == NULL){
-   //     printf("Failed to encode request data, %d bytes was encoded\n", enc_rval.encoded);
-   //     return -1;
-   // }
+   //RRCConnectionRequest_coder(&req_buffer, &buffer_size);
+   asn_enc_rval_t enc_req_rval = RRCConnectionSetup_coder(&req_buffer, BUFFER_SIZE);
+   if(enc_req_rval.encoded == NULL){
+       printf("Failed to encode request data, %d bytes was encoded\n", enc_req_rval.encoded);
+       return -1;
+   }
 
-    send(client_fd, req_buffer, strlen(req_buffer), 0);
+   send(client_fd, req_buffer, strlen(req_buffer), 0);
 
-    ssize_t valread;
+    //ssize_t valread;
     while ((valread = read(client_fd, buffer, BUFFER_SIZE)) > 0) {
         DL_CCCH_Message_t* dl_ccch_msg = 0; 
-        asn_dec_rval_t dec_rval = RRCConnectionSetup_decoder(dl_ccch_msg, buffer, BUFFER_SIZE);
+        asn_dec_rval_t dec_rval = RRCConnectionSetup_decoder(&dl_ccch_msg, buffer, strlen(buffer));
         if(dec_rval.code != RC_OK){
             printf("Failed to decode request data, %d bytes was consumed\n", dec_rval.consumed);
             continue; // yeee should have send reject
@@ -73,11 +73,12 @@ if ((status
 
     memset(req_buffer, 0, sizeof(req_buffer));
 
-    RRCConnectionSetupComplete_coder(&req_buffer, BUFFER_SIZE);
-    //asn_enc_rval_t enc_rval = RRCConnectionSetupComplete_coder(&req_buffer, BUFFER_SIZE);
-    //if(enc_rval.encoded == NULL){
-    //    printf("Failed to encode setup complete data, %d bytes was encoded\n", enc_rval.encoded);
-    //}
+    //RRCConnectionSetupComplete_coder(&req_buffer, &buffer_size);
+    asn_enc_rval_t enc_cont_rval = RRCConnectionSetupComplete_coder(&req_buffer, BUFFER_SIZE);
+    if(enc_cont_rval.encoded == NULL){
+       printf("Failed to encode setup complete data, %d bytes was encoded\n", enc_cont_rval.encoded);
+       return -1;
+    }
 
     send(client_fd, req_buffer, strlen(req_buffer), 0);
     
